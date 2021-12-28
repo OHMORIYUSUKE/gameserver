@@ -135,3 +135,22 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
         # TODO: 実装
         return _update_user(conn, token, name, leader_card_id)
         # pass
+
+# Room
+
+# エラー箇所
+"""
+- room_id = result.lastrowidでエラーになります。
+- INSERT INTO...はできています。
+"""
+def room_create(live_id: int) -> int:
+    with engine.begin() as conn:
+        result = conn.execute(
+            text(
+                "INSERT INTO `room_info` (live_id, max_user_count) VALUES (:live_id, :max_user_count)"
+            ),
+            {"live_id": live_id, "max_user_count": 4},
+        )
+        # print(result)
+    room_id = result.lastrowid
+    return int(room_id)

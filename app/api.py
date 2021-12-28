@@ -3,6 +3,8 @@ from enum import Enum
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
+from starlette.requests import Request
+from starlette.routing import request_response
 
 from . import model
 from .model import (
@@ -42,7 +44,6 @@ class UserCreateResponse(BaseModel):
 
 class RoomCreateRequest(BaseModel):
     live_id: int
-    select_difficulty: LiveDifficulty
 
 
 class RoomCreateResponse(BaseModel):
@@ -137,3 +138,15 @@ def update(req: UserCreateRequest, token: str = Depends(get_auth_token)):
     # print(req)
     model.update_user(token, req.user_name, req.leader_card_id)
     return {}
+
+
+"""Room APIs"""
+
+
+@app.post("/room/create", response_model=RoomCreateResponse)
+def room_create(req: RoomCreateRequest):
+    room_id = model.room_create(req.live_id)
+    if room_id is None:
+        raise HTTPException(status_code=500)
+    # print(f"user_me({token=}, {user=})")
+    return room_id
