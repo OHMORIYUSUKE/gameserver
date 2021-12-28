@@ -26,6 +26,64 @@ class SafeUser(BaseModel):
         orm_mode = True
 
 
+class LiveDifficulty(BaseModel):
+    name: str
+    value: int
+
+    class Config:
+        orm_mode = True
+
+
+class JoinRoomResult(BaseModel):
+    name: str
+    value: int
+
+    class Config:
+        orm_mode = True
+
+
+class WaitRoomStatus(BaseModel):
+    name: str
+    value: int
+
+    class Config:
+        orm_mode = True
+
+
+########################################################################3
+
+
+class RoomInfo(BaseModel):
+    room_id: int
+    live_id: int
+    joined_user_count: int
+    max_user_count: int
+
+    class Config:
+        orm_mode = True
+
+
+class RoomUser(BaseModel):
+    user_id: int
+    name: str
+    leader_card_id: int
+    select_difficulty: LiveDifficulty
+    is_me: bool
+    is_host: bool
+
+    class Config:
+        orm_mode = True
+
+
+class ResultUser(BaseModel):
+    user_id: int
+    judge_count_list: list[int]
+    score: int
+
+    class Config:
+        orm_mode = True
+
+
 def create_user(name: str, leader_card_id: int) -> str:
     """Create new user and returns their token"""
     token = str(uuid.uuid4())
