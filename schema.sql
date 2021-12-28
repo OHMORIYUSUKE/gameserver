@@ -13,7 +13,7 @@ CREATE TABLE `room_info` (
   `room_id` bigint NOT NULL AUTO_INCREMENT,
   `live_id` int DEFAULT NULL,
   `joined_user_count` int DEFAULT NULL,
-  `max_user_count` int DEFAULT 4,
+  `max_user_count` int DEFAULT NULL,
   PRIMARY KEY (`room_id`)
 );
 

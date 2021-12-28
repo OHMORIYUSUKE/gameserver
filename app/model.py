@@ -154,3 +154,17 @@ def room_create(live_id: int) -> int:
         # print(result)
     room_id = result.lastrowid
     return int(room_id)
+
+
+def room_list(live_id: int) -> list[RoomInfo]:
+    with engine.begin() as conn:
+        result = conn.execute(
+            text("SELECT * FROM `room_info` WHERE `live_id`=:live_id"),
+            dict(live_id=live_id),
+        )
+        try:
+            rows = result.all()
+            print(rows)
+        except NoResultFound:
+            return None
+        return list[RoomInfo(rows)]

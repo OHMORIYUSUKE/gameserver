@@ -45,14 +45,12 @@ class UserCreateResponse(BaseModel):
 class RoomCreateRequest(BaseModel):
     live_id: int
 
-
 class RoomCreateResponse(BaseModel):
     room_id: int
 
 
 class RoomListRequest(BaseModel):
     live_id: int
-
 
 class RoomListResponse(BaseModel):
     room_info_list: list[RoomInfo]
@@ -149,4 +147,13 @@ def room_create(req: RoomCreateRequest):
     if room_id is None:
         raise HTTPException(status_code=500)
     # print(f"user_me({token=}, {user=})")
-    return room_id
+    return RoomCreateResponse(room_id=room_id)
+
+
+@app.post("/room/list", response_model=RoomListResponse)
+def room_list(req: RoomListRequest):
+    list_room = model.room_list(req.live_id)
+    if list_room is None:
+        raise HTTPException(status_code=404)
+    # print(f"user_me({token=}, {user=})")
+    return list_room
