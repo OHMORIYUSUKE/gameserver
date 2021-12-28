@@ -58,6 +58,7 @@ class RoomInfo(BaseModel):
     live_id: int
     joined_user_count: int
     max_user_count: int
+    is_active: bool
 
     class Config:
         orm_mode = True
@@ -162,9 +163,13 @@ def room_list(live_id: int) -> list[RoomInfo]:
             text("SELECT * FROM `room_info` WHERE `live_id`=:live_id"),
             dict(live_id=live_id),
         )
+        room_infos = []
         try:
             rows = result.all()
             print(rows)
+            for row in rows:
+                room_infos.append(RoomInfo.from_orm(row))
         except NoResultFound:
             return None
-        return list[RoomInfo(rows)]
+        print(room_infos)
+        return room_infos

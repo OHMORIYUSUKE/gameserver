@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS `user`;
+DROP TABLE IF EXISTS `room_info`;
 
 CREATE TABLE `user` (
   `id` bigint NOT NULL AUTO_INCREMENT,
@@ -14,6 +15,7 @@ CREATE TABLE `room_info` (
   `live_id` int DEFAULT NULL,
   `joined_user_count` int DEFAULT NULL,
   `max_user_count` int DEFAULT NULL,
+  `is_active` boolean DEFAULT true,
   PRIMARY KEY (`room_id`)
 );
 
