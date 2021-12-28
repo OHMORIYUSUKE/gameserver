@@ -52,7 +52,6 @@ def _get_user_by_token(conn, token: str) -> Optional[SafeUser]:
     except NoResultFound:
         return None
     return SafeUser.from_orm(row)
-    # pass
 
 
 def get_user_by_token(token: str) -> Optional[SafeUser]:
