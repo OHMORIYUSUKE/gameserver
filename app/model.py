@@ -143,21 +143,20 @@ def room_create(live_id: int, select_difficulty: int) -> int:
     with engine.begin() as conn:
         result = conn.execute(
             text(
-                "INSERT INTO `room_info` (live_id, max_user_count) VALUES (:live_id, :max_user_count)"
+                "INSERT INTO `room_info` (live_id, max_user_count,joined_user_count) VALUES (:live_id, :max_user_count,:joined_user_count)"
             ),
-            {"live_id": live_id, "max_user_count": 4},
+            {"live_id": live_id, "max_user_count": 4,"joined_user_count": 1},
         )
+        room_id = result.lastrowid
         # print(result)
         result_user_in_room = conn.execute(
             text(
-                "INSERT INTO `user_in_room` (select_difficulty) VALUES (:select_difficulty)"
+                "INSERT INTO `user_in_room` (select_difficulty, room_id) VALUES (:select_difficulty, :room_id)"
             ),
-            {"select_difficulty": select_difficulty},
+            {"select_difficulty": select_difficulty,"room_id": room_id},
         )
         # print(result)
-    room_id = result.lastrowid
     print(room_id)
-    room_join(room_id=room_id, select_difficulty=select_difficulty)
     return int(room_id)
 
 
@@ -213,6 +212,12 @@ def room_join(room_id: int, select_difficulty: int) -> JoinRoomResult:
                 "INSERT INTO `user_in_room` (room_id, select_difficulty) VALUES (:room_id, :select_difficulty)"
             ),
             {"room_id": room_id, "select_difficulty": select_difficulty},
+        )
+        # 人数更新
+        result = conn.execute(
+            text(
+                "UPDATE `room_info` SET joined_user_count = joined_user_count + 1;"
+            )
         )
         # print(result)
         return {"value": 1}

@@ -182,5 +182,5 @@ def room_wait(req: RoomWaitRequest):
         raise HTTPException(status_code=404)
     print(result_list)
     # print(f"user_me({token=}, {user=})")
-    res = {"status": result_status, "room_user_list": result_list}
+    res = {"status": {"value": result_status}, "room_user_list": result_list}
     return res
