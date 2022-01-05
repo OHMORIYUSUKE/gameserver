@@ -164,7 +164,7 @@ def room_list(live_id: int) -> list[RoomInfo]:
     with engine.begin() as conn:
         result = conn.execute(
             text(
-                "SELECT * FROM `room_info` WHERE `live_id`=:live_id AND is_active=False"
+                "SELECT * FROM `room_info` WHERE `live_id`=:live_id AND is_active=True"
             ),
             dict(live_id=live_id),
         )

@@ -170,7 +170,7 @@ def room_join(req: RoomJoinRequest, token: str = Depends(get_auth_token)):
     if result is None:
         raise HTTPException(status_code=404)
     # print(f"user_me({token=}, {user=})")
-    return result
+    return {"join_room_result": result}
 
 
 @app.post("/room/wait", response_model=RoomWaitResponse)
