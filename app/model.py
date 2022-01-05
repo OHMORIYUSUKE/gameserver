@@ -139,11 +139,6 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
 
 # Room
 
-# エラー箇所
-"""
-- room_id = result.lastrowidでエラーになります。
-- INSERT INTO...はできています。
-"""
 def room_create(live_id: int) -> int:
     with engine.begin() as conn:
         result = conn.execute(
@@ -159,11 +154,21 @@ def room_create(live_id: int) -> int:
 
 def room_list(live_id: int) -> list[RoomInfo]:
     with engine.begin() as conn:
+        # Roomに人が4人以上いたらDBに変更を加える(is_active=False)
         result = conn.execute(
-            text("SELECT * FROM `room_info` WHERE `live_id`=:live_id"),
+            text(
+                "UPDATE `room_info` SET is_active = :is_active WHERE joined_user_count >= :joined_user_count"
+            ),
+            dict(is_active=False,joined_user_count=4),
+            )
+        # -----------------------------------
+        result = conn.execute(
+            text("SELECT * FROM `room_info` WHERE `live_id`=:live_id AND is_active=False"),
             dict(live_id=live_id),
         )
         room_infos = []
+        rows = result.all()
+        print(rows)           
         try:
             rows = result.all()
             print(rows)
@@ -172,4 +177,4 @@ def room_list(live_id: int) -> list[RoomInfo]:
         except NoResultFound:
             return None
         print(room_infos)
-        return room_infos
+        return {"room_info_list": room_infos}

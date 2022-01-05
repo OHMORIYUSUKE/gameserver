@@ -13,7 +13,7 @@ CREATE TABLE `user` (
 CREATE TABLE `room_info` (
   `room_id` bigint NOT NULL AUTO_INCREMENT,
   `live_id` int DEFAULT NULL,
-  `joined_user_count` int DEFAULT NULL,
+  `joined_user_count` int DEFAULT 1,
   `max_user_count` int DEFAULT NULL,
   `is_active` boolean DEFAULT true,
   PRIMARY KEY (`room_id`)
