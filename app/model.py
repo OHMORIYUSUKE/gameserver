@@ -139,7 +139,7 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
 # Room
 
 
-def room_create(live_id: int, select_difficulty: int) -> int:
+def room_create(live_id: int, select_difficulty: int,user_id: int) -> int:
     with engine.begin() as conn:
         result = conn.execute(
             text(
@@ -151,9 +151,9 @@ def room_create(live_id: int, select_difficulty: int) -> int:
         # print(result)
         result_user_in_room = conn.execute(
             text(
-                "INSERT INTO `user_in_room` (select_difficulty, room_id) VALUES (:select_difficulty, :room_id)"
+                "INSERT INTO `user_in_room` (select_difficulty, room_id,user_id) VALUES (:select_difficulty, :room_id, user_id)"
             ),
-            {"select_difficulty": select_difficulty,"room_id": room_id},
+            {"select_difficulty": select_difficulty,"room_id": room_id, "user_id": user_id},
         )
         # print(result)
     print(room_id)
@@ -169,8 +169,6 @@ def room_list(live_id: int) -> list[RoomInfo]:
             dict(live_id=live_id),
         )
         room_infos = []
-        rows = result.all()
-        print(rows)
         try:
             rows = result.all()
             print(rows)
@@ -182,15 +180,13 @@ def room_list(live_id: int) -> list[RoomInfo]:
         return {"room_info_list": room_infos}
 
 
-def room_join(room_id: int, select_difficulty: int) -> JoinRoomResult:
+def room_join(room_id: int, select_difficulty: int, user_id: int) -> JoinRoomResult:
     with engine.begin() as conn:
         # Roomに人が4人以上いたらDBに変更を加える(is_active=False)
         result = conn.execute(
             text("SELECT * FROM `user_in_room` WHERE `room_id`=:room_id"),
             dict(room_id=room_id),
         )
-        rows = result.all()
-        print(rows)
         rows = result.all()
         print(rows)
         count = 0
@@ -209,9 +205,9 @@ def room_join(room_id: int, select_difficulty: int) -> JoinRoomResult:
         # --------------------------------------------
         result = conn.execute(
             text(
-                "INSERT INTO `user_in_room` (room_id, select_difficulty) VALUES (:room_id, :select_difficulty)"
+                "INSERT INTO `user_in_room` (room_id, select_difficulty, user_id) VALUES (:room_id, :select_difficulty, :user_id)"
             ),
-            {"room_id": room_id, "select_difficulty": select_difficulty},
+            {"room_id": room_id, "select_difficulty": select_difficulty, "user_id": user_id},
         )
         # 人数更新
         result = conn.execute(
@@ -244,8 +240,6 @@ def room_wait_list(room_id: int) -> list[RoomUser]:
             dict(room_id=room_id),
         )
         room_users = []
-        rows = result.all()
-        print(rows)
         try:
             rows = result.all()
             print(rows)
