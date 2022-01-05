@@ -35,7 +35,6 @@ class LiveDifficulty(BaseModel):
 
 
 class JoinRoomResult(BaseModel):
-    name: str
     value: int
 
     class Config:
@@ -43,7 +42,6 @@ class JoinRoomResult(BaseModel):
 
 
 class WaitRoomStatus(BaseModel):
-    name: str
     value: int
 
     class Config:
@@ -139,7 +137,7 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
 
 # Room
 
-def room_create(live_id: int) -> int:
+def room_create(live_id: int,select_difficulty: int) -> int:
     with engine.begin() as conn:
         result = conn.execute(
             text(
@@ -148,7 +146,16 @@ def room_create(live_id: int) -> int:
             {"live_id": live_id, "max_user_count": 4},
         )
         # print(result)
+        result_user_in_room = conn.execute(
+            text(
+                "INSERT INTO `user_in_room` (select_difficulty) VALUES (:select_difficulty)"
+            ),
+            {"select_difficulty": select_difficulty},
+        )
+        # print(result)
     room_id = result.lastrowid
+    print(room_id)
+    room_join(room_id=room_id,select_difficulty=select_difficulty)
     return int(room_id)
 
 
@@ -178,3 +185,49 @@ def room_list(live_id: int) -> list[RoomInfo]:
             return None
         print(room_infos)
         return {"room_info_list": room_infos}
+
+
+def room_join(room_id : int,select_difficulty :int) -> JoinRoomResult:
+    with engine.begin() as conn:
+        # Roomに人が4人以上いたらDBに変更を加える(is_active=False)
+        result = conn.execute(
+            text(
+                "INSERT INTO `user_in_room` (room_id, select_difficulty) VALUES (:room_id, :select_difficulty)"
+            ),
+            {"room_id": room_id, "select_difficulty": select_difficulty},
+        )
+        # print(result)
+    return {"value": 1}
+
+
+def room_wait_status(room_id : int) -> int:
+    with engine.begin() as conn:
+        result_ok = conn.execute(
+                text("SELECT * FROM `room_info` WHERE `room_id`=:room_id AND is_active=True"),
+                dict(room_id=room_id),
+        )
+        if result_ok:
+            return 1
+        else:
+            return 3
+
+
+
+def room_wait_list(room_id : int) -> list[RoomUser]:
+    with engine.begin() as conn:
+        result = conn.execute(
+                    text("SELECT * FROM `user_in_room` WHERE `room_id`=:room_id"),
+                    dict(room_id=room_id),
+            )
+        room_users = []
+        rows = result.all()
+        print(rows)           
+        try:
+            rows = result.all()
+            print(rows)
+            for row in rows:
+                room_users.append(RoomUser.from_orm(row))
+        except NoResultFound:
+            return None
+        print(room_users)
+    return {"room_user_list": room_users}
