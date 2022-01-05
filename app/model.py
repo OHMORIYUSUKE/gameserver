@@ -7,6 +7,9 @@ from fastapi import HTTPException
 from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.sql.expression import true
+
+
 
 from .db import engine
 
@@ -143,21 +146,27 @@ def room_create(live_id: int, select_difficulty: int,user_id: int) -> int:
     with engine.begin() as conn:
         result = conn.execute(
             text(
-                "INSERT INTO `room_info` (live_id, max_user_count,joined_user_count) VALUES (:live_id, :max_user_count,:joined_user_count)"
+                "INSERT INTO `room_info` (live_id, max_user_count,joined_user_count, is_active) VALUES (:live_id, :max_user_count,:joined_user_count,:is_active)"
             ),
-            {"live_id": live_id, "max_user_count": 4,"joined_user_count": 1},
+            {"live_id": live_id, "max_user_count": 4,"joined_user_count": 1,"is_active": True},
         )
         room_id = result.lastrowid
-        # print(result)
+        # uidからカード取得
+        result = conn.execute(
+        text("SELECT * FROM `user` WHERE `id`=:user_id"),
+        dict(user_id=user_id)
+        )
+        row = result.one()
+        user_name = row[1]
+        leader_card_id = row[3]
         result_user_in_room = conn.execute(
             text(
-                "INSERT INTO `user_in_room` (select_difficulty, room_id,user_id) VALUES (:select_difficulty, :room_id, user_id)"
+                "INSERT INTO `user_in_room` (select_difficulty, room_id,user_id, is_host, is_me, leader_card_id, name) VALUES (:select_difficulty, :room_id, :user_id, :is_host, :is_me, :leader_card_id, :name)"
             ),
-            {"select_difficulty": select_difficulty,"room_id": room_id, "user_id": user_id},
+            {"select_difficulty": select_difficulty,"room_id": room_id, "user_id": user_id,"is_host":True, "is_me": True, "leader_card_id": leader_card_id, "name": user_name},
         )
         # print(result)
-    print(room_id)
-    return int(room_id)
+        return int(room_id)
 
 
 def room_list(live_id: int) -> list[RoomInfo]:
@@ -171,12 +180,10 @@ def room_list(live_id: int) -> list[RoomInfo]:
         room_infos = []
         try:
             rows = result.all()
-            print(rows)
             for row in rows:
                 room_infos.append(RoomInfo.from_orm(row))
         except NoResultFound:
             return None
-        print(room_infos)
         return {"room_info_list": room_infos}
 
 
@@ -237,15 +244,20 @@ def room_wait_list(room_id: int) -> list[RoomUser]:
     with engine.begin() as conn:
         result = conn.execute(
             text("SELECT * FROM `user_in_room` WHERE `room_id`=:room_id"),
-            dict(room_id=room_id),
+            dict(room_id=room_id)
         )
-        room_users = []
         try:
             rows = result.all()
+            print("======room_wait_list() rows=======")
             print(rows)
+            i = 0
+            room_users = []
             for row in rows:
-                room_users.append(RoomUser.from_orm(row))
+                if i != 0:
+                    room_users.append(RoomUser.from_orm(row))
+                    i += 1
+            print("======room_users=======")
+            print(room_users) #[]空になる
+            return {"room_user_list": room_users}
         except NoResultFound:
             return None
-        print(room_users)
-    return {"room_user_list": room_users}

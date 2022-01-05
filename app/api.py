@@ -147,7 +147,9 @@ def update(req: UserCreateRequest, token: str = Depends(get_auth_token)):
 @app.post("/room/create", response_model=RoomCreateResponse)
 def room_create(req: RoomCreateRequest, token: str = Depends(get_auth_token)):
     user = model.get_user_by_token(token)
-    room_id = model.room_create(req.live_id, req.select_difficulty, user.id)
+    print(user.id)
+    user_id = user.id
+    room_id = model.room_create(req.live_id, req.select_difficulty, user_id)
     if room_id is None:
         raise HTTPException(status_code=500)
     # print(f"user_me({token=}, {user=})")
@@ -166,7 +168,8 @@ def room_list(req: RoomListRequest):
 @app.post("/room/join", response_model=RoomJoinResponse)
 def room_join(req: RoomJoinRequest, token: str = Depends(get_auth_token)):
     user = model.get_user_by_token(token)
-    result = model.room_join(req.room_id, req.select_difficulty, user.id)
+    user_id = user.id
+    result = model.room_join(req.room_id, req.select_difficulty, user_id)
     if result is None:
         raise HTTPException(status_code=404)
     # print(f"user_me({token=}, {user=})")
@@ -180,10 +183,12 @@ def room_wait(req: RoomWaitRequest, token: str = Depends(get_auth_token)):
     if result_status is None:
         raise HTTPException(status_code=404)
     print(result_status)
+    print("====================S room_wait_list========================")
     result_list = model.room_wait_list(req.room_id)
     if result_list is None:
         raise HTTPException(status_code=404)
     print(result_list)
+    print("====================E room_wait_list========================")
     # print(f"user_me({token=}, {user=})")
     res = {"status": {"value": result_status}, "room_user_list": result_list}
     return res

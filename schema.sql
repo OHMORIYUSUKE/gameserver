@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS `user`;
 DROP TABLE IF EXISTS `room_info`;
+DROP TABLE IF EXISTS `user_in_room`;
 
 CREATE TABLE `user` (
   `id` bigint NOT NULL AUTO_INCREMENT,
@@ -29,18 +30,3 @@ CREATE TABLE `user_in_room` (
   `is_host` boolean DEFAULT NULL,
   PRIMARY KEY (`room_id`)
 );
-
-INSERT INTO user(id,name,token,leader_card_id) VALUES (0,'ほのか','asdfghjkl','12345');
-INSERT INTO user(id,name,token,leader_card_id) VALUES (0,'ことり','zxcv','88998');
-INSERT INTO user(id,name,token,leader_card_id) VALUES (0,'うみ','qwert','173248');
-
-INSERT INTO user
-  (id,name,token,leader_card_id)
-VALUES 
-  (0,'ほのか','asdfghjkl','12345'),
-  (0,'ことり','zxcv','88998'),
-  (0,'うみ','qwert','173248');
-
-SELECT * FROM user WHERE name='うみ';
-
-SELECT * FROM user WHERE name LIKE 'ほ%';
