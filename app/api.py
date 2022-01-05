@@ -46,12 +46,14 @@ class RoomCreateRequest(BaseModel):
     select_difficulty: int
     live_id: int
 
+
 class RoomCreateResponse(BaseModel):
     room_id: int
 
 
 class RoomListRequest(BaseModel):
     live_id: int
+
 
 class RoomListResponse(BaseModel):
     room_info_list: list[RoomInfo]
@@ -144,7 +146,7 @@ def update(req: UserCreateRequest, token: str = Depends(get_auth_token)):
 
 @app.post("/room/create", response_model=RoomCreateResponse)
 def room_create(req: RoomCreateRequest):
-    room_id = model.room_create(req.live_id,req.select_difficulty)
+    room_id = model.room_create(req.live_id, req.select_difficulty)
     if room_id is None:
         raise HTTPException(status_code=500)
     # print(f"user_me({token=}, {user=})")
@@ -162,7 +164,7 @@ def room_list(req: RoomListRequest):
 
 @app.post("/room/join", response_model=RoomJoinResponse)
 def room_join(req: RoomJoinRequest):
-    result = model.room_join(req.room_id,req.select_difficulty)
+    result = model.room_join(req.room_id, req.select_difficulty)
     if result is None:
         raise HTTPException(status_code=404)
     # print(f"user_me({token=}, {user=})")

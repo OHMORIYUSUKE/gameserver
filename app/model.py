@@ -135,9 +135,11 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
         return _update_user(conn, token, name, leader_card_id)
         # pass
 
+
 # Room
 
-def room_create(live_id: int,select_difficulty: int) -> int:
+
+def room_create(live_id: int, select_difficulty: int) -> int:
     with engine.begin() as conn:
         result = conn.execute(
             text(
@@ -155,27 +157,21 @@ def room_create(live_id: int,select_difficulty: int) -> int:
         # print(result)
     room_id = result.lastrowid
     print(room_id)
-    room_join(room_id=room_id,select_difficulty=select_difficulty)
+    room_join(room_id=room_id, select_difficulty=select_difficulty)
     return int(room_id)
 
 
 def room_list(live_id: int) -> list[RoomInfo]:
     with engine.begin() as conn:
-        # Roomに人が4人以上いたらDBに変更を加える(is_active=False)
         result = conn.execute(
             text(
-                "UPDATE `room_info` SET is_active = :is_active WHERE joined_user_count >= :joined_user_count"
+                "SELECT * FROM `room_info` WHERE `live_id`=:live_id AND is_active=False"
             ),
-            dict(is_active=False,joined_user_count=4),
-            )
-        # -----------------------------------
-        result = conn.execute(
-            text("SELECT * FROM `room_info` WHERE `live_id`=:live_id AND is_active=False"),
             dict(live_id=live_id),
         )
         room_infos = []
         rows = result.all()
-        print(rows)           
+        print(rows)
         try:
             rows = result.all()
             print(rows)
@@ -187,9 +183,31 @@ def room_list(live_id: int) -> list[RoomInfo]:
         return {"room_info_list": room_infos}
 
 
-def room_join(room_id : int,select_difficulty :int) -> JoinRoomResult:
+def room_join(room_id: int, select_difficulty: int) -> JoinRoomResult:
     with engine.begin() as conn:
         # Roomに人が4人以上いたらDBに変更を加える(is_active=False)
+        result = conn.execute(
+            text("SELECT * FROM `user_in_room` WHERE `room_id`=:room_id"),
+            dict(room_id=room_id),
+        )
+        rows = result.all()
+        print(rows)
+        rows = result.all()
+        print(rows)
+        count = 0
+        for row in rows:
+            print(row)
+            count += 1
+        if count >= 4:
+            # Roomに人が4人以上いたらDBに変更を加える(is_active=False)
+            result = conn.execute(
+                text(
+                    "UPDATE `room_info` SET is_active = :is_active"
+                ),
+                dict(is_active=False),
+            )
+            return {"value": 2}
+        # --------------------------------------------
         result = conn.execute(
             text(
                 "INSERT INTO `user_in_room` (room_id, select_difficulty) VALUES (:room_id, :select_difficulty)"
@@ -197,14 +215,16 @@ def room_join(room_id : int,select_difficulty :int) -> JoinRoomResult:
             {"room_id": room_id, "select_difficulty": select_difficulty},
         )
         # print(result)
-    return {"value": 1}
+        return {"value": 1}
 
 
-def room_wait_status(room_id : int) -> int:
+def room_wait_status(room_id: int) -> int:
     with engine.begin() as conn:
         result_ok = conn.execute(
-                text("SELECT * FROM `room_info` WHERE `room_id`=:room_id AND is_active=True"),
-                dict(room_id=room_id),
+            text(
+                "SELECT * FROM `room_info` WHERE `room_id`=:room_id AND is_active=True"
+            ),
+            dict(room_id=room_id),
         )
         if result_ok:
             return 1
@@ -212,16 +232,15 @@ def room_wait_status(room_id : int) -> int:
             return 3
 
 
-
-def room_wait_list(room_id : int) -> list[RoomUser]:
+def room_wait_list(room_id: int) -> list[RoomUser]:
     with engine.begin() as conn:
         result = conn.execute(
-                    text("SELECT * FROM `user_in_room` WHERE `room_id`=:room_id"),
-                    dict(room_id=room_id),
-            )
+            text("SELECT * FROM `user_in_room` WHERE `room_id`=:room_id"),
+            dict(room_id=room_id),
+        )
         room_users = []
         rows = result.all()
-        print(rows)           
+        print(rows)
         try:
             rows = result.all()
             print(rows)
