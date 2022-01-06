@@ -245,12 +245,8 @@ def room_wait_status(room_id: int) -> int:
             text(
                 "SELECT * FROM `room_info` WHERE `room_id`=:room_id AND `is_active`=:is_active"
             ),
-            dict(room_id=room_id, is_active=True),
+            dict(room_id=room_id, is_active=False),
         )
-        row = result_ok.one()
-        flag = row[4]
-        print("==================================")
-        print(flag)
         if result_ok:
             return 2
         else:
@@ -276,7 +272,7 @@ def room_wait_list(room_id: int) -> list[RoomUser]:
 def room_start(room_id: int) -> None:
     with engine.begin() as conn:
         result = conn.execute(
-            text("UPDATE `room_info` SET is_active = :is_active WHERE `room_id`=:room_id"),
+            text("UPDATE `room_info` SET `is_active`=:is_active WHERE `room_id`=:room_id"),
             dict(is_active=False,room_id=room_id),
         )
     return None
