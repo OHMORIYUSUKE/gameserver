@@ -190,7 +190,7 @@ def room_wait(req: RoomWaitRequest, token: str = Depends(get_auth_token)):
     return {"status": result_status, "room_user_list": result_list}
 
 
-@app.post("/room/start", response_model=RoomStartResponse)
+@app.post("/room/start", response_model={})
 def room_start(req: RoomStartRequest):
     result = model.room_start(req.room_id)
     # print(f"user_me({token=}, {user=})")

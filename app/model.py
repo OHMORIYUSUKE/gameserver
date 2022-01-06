@@ -272,6 +272,6 @@ def room_start(room_id: int) -> None:
     with engine.begin() as conn:
         result = conn.execute(
             text("UPDATE `room_info` SET is_active = :is_active WHERE `room_id`=:room_id"),
-            dict(is_active=True,room_id=room_id),
+            dict(is_active=False,room_id=room_id),
         )
     return None
