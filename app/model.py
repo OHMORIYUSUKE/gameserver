@@ -243,14 +243,14 @@ def room_wait_status(room_id: int) -> int:
     with engine.begin() as conn:
         result_ok = conn.execute(
             text(
-                "SELECT * FROM `room_info` WHERE `room_id`=:room_id AND is_active=True"
+                "SELECT * FROM `room_info` WHERE `room_id`=:room_id AND `is_active`=:is_active"
             ),
-            dict(room_id=room_id),
+            dict(room_id=room_id, is_active=False),
         )
         if result_ok:
-            return 1
+            return 2
         else:
-            return 3
+            return 1
 
 
 def room_wait_list(room_id: int) -> list[RoomUser]:
@@ -292,3 +292,7 @@ def room_end(room_id: int, judge_count_list: list[int], score: int, user_id: int
             },
         )
         return None
+
+
+def room_result() -> list[ResultUser]:
+    return
