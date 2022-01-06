@@ -214,13 +214,17 @@ def room_join(room_id: int, select_difficulty: int, user_id: int) -> JoinRoomRes
         if count >= 4:
             # Roomに人が4人以上いたらDBに変更を加える(is_active=False)
             result = conn.execute(
-                text("UPDATE `room_info` SET is_active = :is_active WHERE `room_id`=:room_id"),
-                dict(is_active=False,room_id=room_id),
+                text(
+                    "UPDATE `room_info` SET is_active = :is_active WHERE `room_id`=:room_id"
+                ),
+                dict(is_active=False, room_id=room_id),
             )
             return {"value": 2}
         # 人数更新
         result = conn.execute(
-            text("UPDATE `room_info` SET joined_user_count = joined_user_count + 1 WHERE `room_id`=:room_id"),
+            text(
+                "UPDATE `room_info` SET joined_user_count = joined_user_count + 1 WHERE `room_id`=:room_id"
+            ),
             dict(room_id=room_id),
         )
         # 人追加
@@ -232,8 +236,18 @@ def room_join(room_id: int, select_difficulty: int, user_id: int) -> JoinRoomRes
         leader_card_id = row[3]
         #
         result = conn.execute(
-            text("INSERT INTO `user_in_room` (room_id,user_id,name,leader_card_id,select_difficulty,is_me,is_host) VALUES (:room_id,:user_id,:name,:leader_card_id,:select_difficulty,:is_me,:is_host)"),
-            dict(room_id=room_id, user_id=user_id, name=name, leader_card_id=leader_card_id, select_difficulty=select_difficulty,is_me=True,is_host=False),
+            text(
+                "INSERT INTO `user_in_room` (room_id,user_id,name,leader_card_id,select_difficulty,is_me,is_host) VALUES (:room_id,:user_id,:name,:leader_card_id,:select_difficulty,:is_me,:is_host)"
+            ),
+            dict(
+                room_id=room_id,
+                user_id=user_id,
+                name=name,
+                leader_card_id=leader_card_id,
+                select_difficulty=select_difficulty,
+                is_me=True,
+                is_host=False,
+            ),
         )
         # print(result)
         return {"value": 1}
@@ -245,12 +259,12 @@ def room_wait_status(room_id: int) -> int:
             text(
                 "SELECT * FROM `room_info` WHERE `room_id`=:room_id AND `is_active`=:is_active"
             ),
-            dict(room_id=room_id, is_active=False),
+            dict(room_id=room_id, is_active=True),
         )
-        if result_ok:
-            return 2
-        else:
+        if result_ok.first():
             return 1
+        else:
+            return 2
 
 
 def room_wait_list(room_id: int) -> list[RoomUser]:
@@ -272,13 +286,17 @@ def room_wait_list(room_id: int) -> list[RoomUser]:
 def room_start(room_id: int) -> None:
     with engine.begin() as conn:
         result = conn.execute(
-            text("UPDATE `room_info` SET `is_active`=:is_active WHERE `room_id`=:room_id"),
-            dict(is_active=False,room_id=room_id),
+            text(
+                "UPDATE `room_info` SET `is_active`=:is_active WHERE `room_id`=:room_id"
+            ),
+            dict(is_active=False, room_id=room_id),
         )
     return None
 
 
-def room_end(room_id: int, judge_count_list: list[int], score: int, user_id: int) -> None:
+def room_end(
+    room_id: int, judge_count_list: list[int], score: int, user_id: int
+) -> None:
     with engine.begin() as conn:
         result = conn.execute(
             text(
@@ -288,11 +306,20 @@ def room_end(room_id: int, judge_count_list: list[int], score: int, user_id: int
                 "room_id": room_id,
                 "user_id": user_id,
                 "judge_count_list": json.dumps(judge_count_list),
-                "score": score
+                "score": score,
             },
         )
         return None
 
 
-def room_result() -> list[ResultUser]:
-    return
+def room_result(room_id: int, user_id: int) -> list[ResultUser]:
+    with engine.begin() as conn:
+        result = conn.execute(
+            text("SELECT * FROM `user_result` WHERE `room_id`=:room_id"),
+            {"room_id": room_id},
+        )
+        rows = result.all()
+        room_users_result = []
+        for row in rows:
+            room_users_result.append(ResultUser.from_orm(row))
+    return room_users_result
