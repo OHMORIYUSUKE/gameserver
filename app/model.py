@@ -328,10 +328,9 @@ def room_result(room_id: int, user_id: int) -> list[ResultUser]:
             print(row)
             print(i)
             if i == 2:
-                room_users_result_ini.append(row[2])
+                room_users_result_ini.append(json.loads(row[2]))
                 continue
             room_users_result_ini.append(row)
-            i += 1
 
         for row in room_users_result_ini:
             print(row)
