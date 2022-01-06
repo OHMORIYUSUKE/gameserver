@@ -73,7 +73,7 @@ class RoomWaitRequest(BaseModel):
 
 
 class RoomWaitResponse(BaseModel):
-    status: WaitRoomStatus
+    status: int
     room_user_list: list[RoomUser]
 
 
@@ -190,5 +190,4 @@ def room_wait(req: RoomWaitRequest, token: str = Depends(get_auth_token)):
     print(result_list)
     print("====================E room_wait_list========================")
     # print(f"user_me({token=}, {user=})")
-    res = {"status": result_status, "room_user_list": result_list}
-    return res
+    return {"status": result_status, "room_user_list": result_list}

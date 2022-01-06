@@ -66,10 +66,11 @@ class RoomInfo(BaseModel):
 
 
 class RoomUser(BaseModel):
+    room_id: int
     user_id: int
     name: str
     leader_card_id: int
-    select_difficulty: LiveDifficulty
+    select_difficulty: int
     is_me: bool
     is_host: bool
 
@@ -250,12 +251,9 @@ def room_wait_list(room_id: int) -> list[RoomUser]:
             rows = result.all()
             print("======room_wait_list() rows=======")
             print(rows)
-            i = 0
             room_users = []
             for row in rows:
-                if i != 0:
-                    room_users.append(RoomUser.from_orm(row))
-                    i += 1
+                room_users.append(RoomUser.from_orm(row))
             print("======room_users=======")
             print(room_users) #[]空になる
             return {"room_user_list": room_users}
