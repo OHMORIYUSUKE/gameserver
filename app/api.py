@@ -206,9 +206,9 @@ def room_end(req: RoomEndRequest, token: str = Depends(get_auth_token)):
     return {}
 
 
-@app.post("/room/result", response_model=RoomResultResponse)
+@app.post("/room/result", response_model=[])
 def room_result(req: RoomResultRequest, token: str = Depends(get_auth_token)):
     user = model.get_user_by_token(token)
     user_id = user.id
     result = model.room_result(req.room_id, user_id)
-    return {}
+    return {"result_user_list":result}

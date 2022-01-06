@@ -79,7 +79,7 @@ class RoomUser(BaseModel):
 class ResultUser(BaseModel):
     room_id: int
     user_id: int
-    judge_count_list: list[int]
+    judge_count_list: list[int] = []
     score: int
 
     class Config:
@@ -313,7 +313,7 @@ def room_end(
         return None
 
 
-def room_result(room_id: int, user_id: int) -> list[ResultUser]:
+def room_result(room_id: int, user_id: int) -> list:
     with engine.begin() as conn:
         result = conn.execute(
             text("SELECT * FROM `user_result` WHERE `room_id`=:room_id"),
@@ -322,16 +322,26 @@ def room_result(room_id: int, user_id: int) -> list[ResultUser]:
         rows = result.all()
         room_users_result = []
         room_users_result_ini = []
-        # バグ
-        for i,row in enumerate(rows):
-            print(row)
-            print(i)
-            if i == 2:
-                room_users_result_ini.append(json.loads(row[2]))
-            else:
-                room_users_result_ini.append(row)
-        #
-        for row in room_users_result_ini:
-            print(row)
-            room_users_result.append(ResultUser.from_orm(row))
-    return room_users_result
+        item_list = []
+        i = 0
+        for row in rows:
+            for item in row:
+                item_list.append(item)
+                if i == 2:
+                    room_users_result_ini.append(json.loads(item))
+                    i+=1
+                else:
+                    room_users_result_ini.append(item)
+                    i+=1
+            print(room_users_result_ini)
+            room_users_result.append(ResultUser.from_orm(room_users_result_ini))
+        return room_users_result
+"""""339行目でtype Error
+pydantic.error_wrappers.ValidationError: 3 validation errors for ResultUser
+room_id
+  field required (type=value_error.missing)
+user_id
+  field required (type=value_error.missing)
+score
+  field required (type=value_error.missing)
+"""""
