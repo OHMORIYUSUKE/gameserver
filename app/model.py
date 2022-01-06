@@ -275,3 +275,19 @@ def room_start(room_id: int) -> None:
             dict(is_active=False,room_id=room_id),
         )
     return None
+
+
+def room_end(room_id: int, judge_count_list: list[int], score: int, user_id: int) -> None:
+    with engine.begin() as conn:
+        result = conn.execute(
+            text(
+                "INSERT INTO `user_result` (room_id, user_id, judge_count_list, score) VALUES (:room_id, :user_id, :judge_count_list, :score)"
+            ),
+            {
+                "room_id": room_id,
+                "user_id": user_id,
+                "judge_count_list": json.dumps(judge_count_list),
+                "score": score
+            },
+        )
+        return None

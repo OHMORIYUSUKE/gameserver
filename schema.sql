@@ -1,6 +1,7 @@
 DROP TABLE IF EXISTS `user`;
 DROP TABLE IF EXISTS `room_info`;
 DROP TABLE IF EXISTS `user_in_room`;
+DROP TABLE IF EXISTS `user_result`;
 
 CREATE TABLE `user` (
   `id` bigint NOT NULL AUTO_INCREMENT,
@@ -21,12 +22,20 @@ CREATE TABLE `room_info` (
 );
 
 CREATE TABLE `user_in_room` (
-  `room_id` bigint NOT NULL AUTO_INCREMENT,
+  `room_id` bigint NOT NULL,
   `user_id` int DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `leader_card_id` int DEFAULT NULL,
   `select_difficulty` int DEFAULT NULL,
   `is_me` boolean DEFAULT NULL,
   `is_host` boolean DEFAULT NULL,
+  PRIMARY KEY (`room_id`)
+);
+
+CREATE TABLE `user_result` (
+  `room_id` bigint NOT NULL,
+  `user_id` int DEFAULT NULL,
+  `judge_count_list` varchar(255) DEFAULT NULL,
+  `score` int DEFAULT NULL,
   PRIMARY KEY (`room_id`)
 );
