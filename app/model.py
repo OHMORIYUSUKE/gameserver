@@ -245,8 +245,12 @@ def room_wait_status(room_id: int) -> int:
             text(
                 "SELECT * FROM `room_info` WHERE `room_id`=:room_id AND `is_active`=:is_active"
             ),
-            dict(room_id=room_id, is_active=False),
+            dict(room_id=room_id, is_active=True),
         )
+        row = result_ok.one()
+        flag = row[4]
+        print("==================================")
+        print(flag)
         if result_ok:
             return 2
         else:
