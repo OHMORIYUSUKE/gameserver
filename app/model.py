@@ -9,8 +9,6 @@ from sqlalchemy import text
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.sql.expression import true
 
-
-
 from .db import engine
 
 
@@ -143,19 +141,23 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
 # Room
 
 
-def room_create(live_id: int, select_difficulty: int,user_id: int) -> int:
+def room_create(live_id: int, select_difficulty: int, user_id: int) -> int:
     with engine.begin() as conn:
         result = conn.execute(
             text(
                 "INSERT INTO `room_info` (live_id, max_user_count,joined_user_count, is_active) VALUES (:live_id, :max_user_count,:joined_user_count,:is_active)"
             ),
-            {"live_id": live_id, "max_user_count": 4,"joined_user_count": 1,"is_active": True},
+            {
+                "live_id": live_id,
+                "max_user_count": 4,
+                "joined_user_count": 1,
+                "is_active": True,
+            },
         )
         room_id = result.lastrowid
         # uidからカード取得
         result = conn.execute(
-        text("SELECT * FROM `user` WHERE `id`=:user_id"),
-        dict(user_id=user_id)
+            text("SELECT * FROM `user` WHERE `id`=:user_id"), dict(user_id=user_id)
         )
         row = result.one()
         user_name = row[1]
@@ -164,7 +166,15 @@ def room_create(live_id: int, select_difficulty: int,user_id: int) -> int:
             text(
                 "INSERT INTO `user_in_room` (select_difficulty, room_id,user_id, is_host, is_me, leader_card_id, name) VALUES (:select_difficulty, :room_id, :user_id, :is_host, :is_me, :leader_card_id, :name)"
             ),
-            {"select_difficulty": select_difficulty,"room_id": room_id, "user_id": user_id,"is_host":True, "is_me": True, "leader_card_id": leader_card_id, "name": user_name},
+            {
+                "select_difficulty": select_difficulty,
+                "room_id": room_id,
+                "user_id": user_id,
+                "is_host": True,
+                "is_me": True,
+                "leader_card_id": leader_card_id,
+                "name": user_name,
+            },
         )
         # print(result)
         return int(room_id)
@@ -204,10 +214,8 @@ def room_join(room_id: int, select_difficulty: int, user_id: int) -> JoinRoomRes
         if count >= 4:
             # Roomに人が4人以上いたらDBに変更を加える(is_active=False)
             result = conn.execute(
-                text(
-                    "UPDATE `room_info` SET is_active = :is_active"
-                ),
-                dict(is_active=False),
+                text("UPDATE `room_info` SET is_active = :is_active WHERE `room_id`=:room_id"),
+                dict(is_active=False,room_id=room_id),
             )
             return {"value": 2}
         # --------------------------------------------
@@ -215,13 +223,16 @@ def room_join(room_id: int, select_difficulty: int, user_id: int) -> JoinRoomRes
             text(
                 "INSERT INTO `user_in_room` (room_id, select_difficulty, user_id) VALUES (:room_id, :select_difficulty, :user_id)"
             ),
-            {"room_id": room_id, "select_difficulty": select_difficulty, "user_id": user_id},
+            {
+                "room_id": room_id,
+                "select_difficulty": select_difficulty,
+                "user_id": user_id,
+            },
         )
         # 人数更新
         result = conn.execute(
-            text(
-                "UPDATE `room_info` SET joined_user_count = joined_user_count + 1;"
-            )
+            text("UPDATE `room_info` SET joined_user_count = joined_user_count + 1 WHERE `room_id`=:room_id"),
+            dict(room_id=room_id),
         )
         # print(result)
         return {"value": 1}
@@ -245,17 +256,22 @@ def room_wait_list(room_id: int) -> list[RoomUser]:
     with engine.begin() as conn:
         result = conn.execute(
             text("SELECT * FROM `user_in_room` WHERE `room_id`=:room_id"),
-            dict(room_id=room_id)
+            dict(room_id=room_id),
         )
         try:
             rows = result.all()
-            print("======room_wait_list() rows=======")
-            print(rows)
             room_users = []
             for row in rows:
                 room_users.append(RoomUser.from_orm(row))
-            print("======room_users=======")
-            print(room_users) #[]空になる
-            return {"room_user_list": room_users}
+            return room_users
         except NoResultFound:
             return None
+
+
+def room_start(room_id: int) -> None:
+    with engine.begin() as conn:
+        result = conn.execute(
+            text("UPDATE `room_info` SET is_active = :is_active WHERE `room_id`=:room_id"),
+            dict(is_active=True,room_id=room_id),
+        )
+    return None

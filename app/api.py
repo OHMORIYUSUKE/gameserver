@@ -182,12 +182,16 @@ def room_wait(req: RoomWaitRequest, token: str = Depends(get_auth_token)):
     result_status = model.room_wait_status(req.room_id)
     if result_status is None:
         raise HTTPException(status_code=404)
-    print(result_status)
-    print("====================S room_wait_list========================")
+    # print(result_status)
     result_list = model.room_wait_list(req.room_id)
     if result_list is None:
         raise HTTPException(status_code=404)
-    print(result_list)
-    print("====================E room_wait_list========================")
-    # print(f"user_me({token=}, {user=})")
+    # print(result_list)
     return {"status": result_status, "room_user_list": result_list}
+
+
+@app.post("/room/start", response_model=RoomStartResponse)
+def room_start(req: RoomStartRequest):
+    result = model.room_start(req.room_id)
+    # print(f"user_me({token=}, {user=})")
+    return {}
