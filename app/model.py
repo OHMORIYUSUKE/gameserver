@@ -77,6 +77,7 @@ class RoomUser(BaseModel):
 
 
 class ResultUser(BaseModel):
+    room_id: int
     user_id: int
     judge_count_list: list[int]
     score: int
@@ -321,5 +322,7 @@ def room_result(room_id: int, user_id: int) -> list[ResultUser]:
         rows = result.all()
         room_users_result = []
         for row in rows:
+            print(row)
+            row = eval(row[2])
             room_users_result.append(ResultUser.from_orm(row))
     return room_users_result
