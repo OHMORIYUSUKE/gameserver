@@ -204,3 +204,12 @@ def room_end(req: RoomEndRequest, token: str = Depends(get_auth_token)):
     result = model.room_end(req.room_id, req.judge_count_list, req.score, user_id)
     # print(f"user_me({token=}, {user=})")
     return {}
+
+
+@app.post("/room/end", response_model={})
+def room_end(req: RoomEndRequest, token: str = Depends(get_auth_token)):
+    user = model.get_user_by_token(token)
+    user_id = user.id
+    result = model.room_end(req.room_id, req.judge_count_list, req.score, user_id)
+    # print(f"user_me({token=}, {user=})")
+    return {}

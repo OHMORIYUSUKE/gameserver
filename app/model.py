@@ -218,21 +218,22 @@ def room_join(room_id: int, select_difficulty: int, user_id: int) -> JoinRoomRes
                 dict(is_active=False,room_id=room_id),
             )
             return {"value": 2}
-        # --------------------------------------------
-        result = conn.execute(
-            text(
-                "INSERT INTO `user_in_room` (room_id, select_difficulty, user_id) VALUES (:room_id, :select_difficulty, :user_id)"
-            ),
-            {
-                "room_id": room_id,
-                "select_difficulty": select_difficulty,
-                "user_id": user_id,
-            },
-        )
         # 人数更新
         result = conn.execute(
             text("UPDATE `room_info` SET joined_user_count = joined_user_count + 1 WHERE `room_id`=:room_id"),
             dict(room_id=room_id),
+        )
+        # 人追加
+        result = conn.execute(
+            text("SELECT * FROM `user` WHERE `id`=:user_id"), dict(user_id=user_id)
+        )
+        row = result.one()
+        name = row[1]
+        leader_card_id = row[3]
+        #
+        result = conn.execute(
+            text("INSERT INTO `user_in_room` (room_id,user_id,name,leader_card_id,select_difficulty,is_me,is_host) VALUES (:room_id,:user_id,:name,:leader_card_id,:select_difficulty,:is_me,:is_host)"),
+            dict(room_id=room_id, user_id=user_id, name=name, leader_card_id=leader_card_id, select_difficulty=select_difficulty,is_me=True,is_host=False),
         )
         # print(result)
         return {"value": 1}
