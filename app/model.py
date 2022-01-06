@@ -323,15 +323,14 @@ def room_result(room_id: int, user_id: int) -> list[ResultUser]:
         room_users_result = []
         room_users_result_ini = []
         # バグ
-        i = 0
-        for row in rows:
+        for i,row in enumerate(rows):
             print(row)
             print(i)
             if i == 2:
                 room_users_result_ini.append(json.loads(row[2]))
-                continue
-            room_users_result_ini.append(row)
-
+            else:
+                room_users_result_ini.append(row)
+        #
         for row in room_users_result_ini:
             print(row)
             room_users_result.append(ResultUser.from_orm(row))
