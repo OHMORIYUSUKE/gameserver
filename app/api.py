@@ -65,7 +65,7 @@ class RoomJoinRequest(BaseModel):
 
 
 class RoomJoinResponse(BaseModel):
-    join_room_result: JoinRoomResult
+    join_room_result: int
 
 
 class RoomWaitRequest(BaseModel):
@@ -173,7 +173,7 @@ def room_join(req: RoomJoinRequest, token: str = Depends(get_auth_token)):
     if result is None:
         raise HTTPException(status_code=404)
     # print(f"user_me({token=}, {user=})")
-    return {"join_room_result": result}
+    return {"join_room_result": result.value}
 
 
 @app.post("/room/wait", response_model=RoomWaitResponse)
