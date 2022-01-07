@@ -329,13 +329,16 @@ def room_result(room_id: int, user_id: int) -> list:
                 item_list.append(item)
                 if i == 2:
                     room_users_result_ini.append(json.loads(item))
-                    i+=1
+                    i += 1
                 else:
                     room_users_result_ini.append(item)
-                    i+=1
+                    i += 1
+            room_users_result_ini = tuple(room_users_result_ini)
             print(room_users_result_ini)
             room_users_result.append(ResultUser.from_orm(room_users_result_ini))
         return room_users_result
+
+
 """""339行目でtype Error
 pydantic.error_wrappers.ValidationError: 3 validation errors for ResultUser
 room_id
@@ -344,4 +347,4 @@ user_id
   field required (type=value_error.missing)
 score
   field required (type=value_error.missing)
-"""""
+""" ""
