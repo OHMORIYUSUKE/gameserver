@@ -199,8 +199,9 @@ def room_list(live_id: int) -> list[RoomInfo]:
         return {"room_info_list": room_infos}
 
 
-def room_join(room_id: int, select_difficulty: int, user_id: int) -> JoinRoomResult:
+def room_join(room_id: int, select_difficulty: LiveDifficulty, user_id: int) -> JoinRoomResult:
     with engine.begin() as conn:
+        print("====================================================")
         # Roomに人が4人以上いたらDBに変更を加える(is_active=False)
         result = conn.execute(
             text("SELECT * FROM `user_in_room` WHERE `room_id`=:room_id"),
@@ -228,6 +229,7 @@ def room_join(room_id: int, select_difficulty: int, user_id: int) -> JoinRoomRes
             ),
             dict(room_id=room_id),
         )
+        print("======- 人数更新 OK ===========")
         # 人追加
         result = conn.execute(
             text("SELECT * FROM `user` WHERE `id`=:user_id"), dict(user_id=user_id)
@@ -245,12 +247,13 @@ def room_join(room_id: int, select_difficulty: int, user_id: int) -> JoinRoomRes
                 user_id=user_id,
                 name=name,
                 leader_card_id=leader_card_id,
-                select_difficulty=select_difficulty,
+                select_difficulty=select_difficulty.value,
                 is_me=True,
                 is_host=False,
             ),
         )
-        # print(result)
+        print("======- 人追加 OK ===========")
+        print(result)
         return {"value": 1}
 
 
@@ -333,18 +336,7 @@ def room_result(room_id: int, user_id: int) -> list:
                 else:
                     room_users_result_ini.append(item)
                     i += 1
-            room_users_result_ini = tuple(room_users_result_ini)
             print(room_users_result_ini)
-            room_users_result.append(ResultUser.from_orm(room_users_result_ini))
+            room_users_result.append(ResultUser(room_id=room_users_result_ini[0],user_id=room_users_result_ini[1],judge_count_list=room_users_result_ini[2],score=room_users_result_ini[3]))
         return room_users_result
 
-
-"""""339行目でtype Error
-pydantic.error_wrappers.ValidationError: 3 validation errors for ResultUser
-room_id
-  field required (type=value_error.missing)
-user_id
-  field required (type=value_error.missing)
-score
-  field required (type=value_error.missing)
-""" ""
